@@ -1,0 +1,1 @@
+<%@ Application Inherits="WebForum.WebServer.HttpApi.HttpHost.Global" %>
