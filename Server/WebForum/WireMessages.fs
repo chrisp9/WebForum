@@ -3,20 +3,20 @@
 open System
 
 [<CLIMutable>]
-type AddUserMessage = {
+type AddUserWireMessage = {
    Username : string
    Password : string
    Email : string
 }
 
 [<CLIMutable>]
-type AuthenticateMessage = {
+type AuthenticateWireMessage = {
    Username : string
    Password : string
 }
 
 [<CLIMutable>]
-type AddPostMessage = {
+type AddPostWireMessage = {
    Title : string
    Message : string
    Username : string
