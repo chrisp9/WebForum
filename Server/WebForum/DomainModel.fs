@@ -5,15 +5,17 @@ open System
 module Users =
 
    type IUsers =
-      abstract WithUsername : string -> Envelope<User>
+      abstract WithUsername : string -> Envelope<User> option
       inherit seq<Envelope<User>>
 
    type UsersInMemory(users : seq<Envelope<User>>) =
       interface IUsers with
          member this.WithUsername(name) =
-            users 
-            |> Seq.filter(fun x -> x.Item.Username = name) 
-            |> Seq.head
+            let usersWithName = users |> Seq.filter(fun x -> x.Item.Username = name) 
+            match Seq.length usersWithName with
+            | 0 -> None
+            | 1 -> Some (Seq.head usersWithName)
+            | _ -> ArgumentException("There is more than one user with the provided username") |> raise
 
          member this.GetEnumerator() =
             users.GetEnumerator()
@@ -22,11 +24,11 @@ module Users =
 
    let ToUsers users = UsersInMemory(users)
 
-   let Handle (users : seq<Envelope<User>>) (request : Envelope<AddUserMessage>) =
-      match Seq.contains request users with
-      | true -> None
-      | false -> {
-                    Email = request.Item.Email
+   let Handle (users : IUsers) (request : Envelope<AddUserMessage>) =
+      match users.WithUsername(request.Item.Username) with
+      | Some _ -> None
+      | None -> {
+                    User.Email = request.Item.Email
                     Username = request.Item.Username
                     Password = request.Item.Password
                  } 
