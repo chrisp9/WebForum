@@ -63,10 +63,6 @@
       <HintPath>..\packages\FSharp.Control.Reactive.3.2.0\lib\net40\FSharp.Control.Reactive.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="FSharp.Core">
-      <HintPath>..\packages\FSharp.Core.3.1.2\lib\net40\FSharp.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="FSharp.Reactive">
       <HintPath>..\packages\FSharp.Reactive.2.1.131002\lib\net40\FSharp.Reactive.dll</HintPath>
       <Private>True</Private>

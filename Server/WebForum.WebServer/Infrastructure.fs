@@ -8,6 +8,7 @@ open WebForum.WebServer.HttpApi
 open System.Collections.Concurrent
 open FSharp.Reactive
 open System.Reactive
+open WebForum.WebServer.HttpApi.Envelope
 
 type Agent<'T> = Microsoft.FSharp.Control.MailboxProcessor<'T>
 
@@ -17,6 +18,18 @@ type Global() =
    inherit System.Web.HttpApplication()
    member this.Application_Start (sender : obj) (e : EventArgs) =
       let users = ConcurrentBag<Envelope<User>>()
+      let notifications = ConcurrentBag<Envelope<Notification>>()
+
+
+      let usersSubject = new Subjects.Subject<Envelope<User>>()
+      usersSubject.Subscribe users.Add |> ignore
+
+      let notificationSubject = new Subjects.Subject<Notification>()
+      notificationSubject
+      |> Observable.map EnvelopWithDefaults
+      |> Observable.subscribe notifications.Add ignore ignore
+      |> ignore
+
 
       let agent = new Agent<Envelope<AddUserMessage>>(fun inbox ->
          let rec loop () =
@@ -26,17 +39,28 @@ type Global() =
                let handle = Users.Handle rs
                let newUsers = handle cmd
                match newUsers with
-               | Some r -> users.Add(r)
-               | _ -> ()
+               | Some r ->
+                  usersSubject.OnNext r
+                  notificationSubject.OnNext
+                     {
+                        Notification.About = cmd.Id
+                        Notification.Type = "Success"
+                        Notification.Message =
+                           sprintf "A new user with username %s has been created" (cmd.Item.Username)
+                     }
+               | _ ->
+                  notificationSubject.OnNext
+                     {
+                        Notification.About = cmd.Id
+                        Notification.Type = "Failure"
+                        Notification.Message =
+                           sprintf "The user with username %s already exists. Please choose a different username" (cmd.Item.Username)
+                     }
                return! loop()}
          loop())
       do agent.Start()
 
-      let x = FSharp.Control.Observable.subscribe agent.Post
-      let g = Observer.Create agent.Post
-      let sub = new Subjects.Subject<Envelope<AddUserMessage>>()
-
       Infrastructure.Configure 
-         (users)
-         (g)
+         (users |> Users.ToUsers)
+         (Observer.Create agent.Post)
          (GlobalConfiguration.Configuration)

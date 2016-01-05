@@ -41,3 +41,10 @@ module Envelope =
    let EnvelopWithDefaults item =
       // TODO Add a DateTime provider and use this here
       Envelop (Guid.NewGuid()) (DateTimeOffset.Now) item
+
+   [<CLIMutable>]
+   type Notification = {
+      About : Guid
+      Type : string
+      Message : string
+   }

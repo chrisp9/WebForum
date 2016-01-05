@@ -10,9 +10,7 @@ open System.Web.Http.Controllers
 open FSharp.Control
 open WebForum.WebServer.HttpApi
 
-type CompositionRoot(users : System.Collections.Concurrent.ConcurrentBag<Envelope<User>>, newUserRequestObserver : IObserver<Envelope<AddUserMessage>>) =
-
-
+type CompositionRoot(users : Users.IUsers, newUserRequestObserver : IObserver<Envelope<AddUserMessage>>) =
    interface IHttpControllerActivator with
       member this.Create(request, controllerDescriptor, controllerType) =
          if controllerType = typeof<HomeController> then
