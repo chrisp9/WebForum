@@ -1,43 +1,36 @@
 ﻿module WebForum.WebServer.HttpApi.Infrastructure
 
 open System
+open System.Reactive
+open FSharp.Reactive
+open System.Net.Http
 open System.Web.Http
 open System.Web.Http.Dispatcher
 open System.Web.Http.Controllers
+open FSharp.Control
 open WebForum.WebServer.HttpApi
 
-type Agent<'T> = Microsoft.FSharp.Control.MailboxProcessor<'T>
+type CompositionRoot(users : System.Collections.Concurrent.ConcurrentBag<Envelope<User>>, newUserRequestObserver : IObserver<Envelope<AddUserMessage>>) =
 
-type CompositionRoot() =
-   let users = System.Collections.Concurrent.ConcurrentBag<Envelope<User>>()
-   let agent = new Agent<Envelope<AddUserMessage>>(fun inbox ->
-      let rec loop () =
-         async {
-            let! cmd = inbox.Receive()
-            let rs = users |> Users.ToUsers
-            let handle = Users.Handle rs
-            let newUsers = handle cmd
-            match newUsers with
-            | Some r -> users.Add(r)
-            | _ -> ()
-            return! loop()}
-      loop())
-   do agent.Start()
 
    interface IHttpControllerActivator with
       member this.Create(request, controllerDescriptor, controllerType) =
          if controllerType = typeof<HomeController> then
             new HomeController() :> IHttpController
          elif controllerType = typeof<AddUserController> then
-            let c = new AddUserController()
-            c :> IHttpController
+            let addUserController = new AddUserController()
+            
+            (addUserController :> IObservable<Envelope<AddUserMessage>>)
+              .Subscribe newUserRequestObserver 
+              |> request.RegisterForDispose
+            addUserController :> IHttpController
          else
             raise <| ArgumentException("Unknown controller type")
 
 type HttpRouteDefaults = { Controller : string; Id : obj }
 
-let ConfigureServices (config : HttpConfiguration) =
-   config.Services.Replace(typeof<IHttpControllerActivator>, CompositionRoot())
+let ConfigureServices users newUserRequestObserver (config : HttpConfiguration) =
+   config.Services.Replace(typeof<IHttpControllerActivator>, CompositionRoot(users, newUserRequestObserver))
 
 let ConfigureRoutes (config : HttpConfiguration) =
    config.Routes.MapHttpRoute(
@@ -49,7 +42,7 @@ let ConfigureFormatting (config : HttpConfiguration) =
    config.Formatters.JsonFormatter.SerializerSettings.ContractResolver <-
       Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver()
 
-let Configure config = 
+let Configure users (newUserRequestObserver : IObserver<Envelope<AddUserMessage>>) config = 
    ConfigureRoutes config
-   ConfigureServices config
+   ConfigureServices users newUserRequestObserver config
    ConfigureFormatting config
