@@ -33,3 +33,8 @@ type AddUserController() =
    override this.Dispose disposing =
       if disposing then subject.Dispose()
       base.Dispose disposing
+
+type NotificationsController(notifications : Notifications.INotifications) =
+   inherit ApiController()
+
+   member this.Notifications = notifications

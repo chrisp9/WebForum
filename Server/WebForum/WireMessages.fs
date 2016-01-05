@@ -21,3 +21,15 @@ type AddPostWireMessage = {
    Message : string
    Username : string
 }
+
+[<CLIMutable>]
+type NotificationWireMessage = {
+   About : string
+   Type : string
+   Message : string
+}
+
+[<CLIMutable>]
+type NotificationListWireMessage = {
+   Notifications : NotificationWireMessage array
+}
