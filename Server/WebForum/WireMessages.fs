@@ -33,3 +33,13 @@ type NotificationWireMessage = {
 type NotificationListWireMessage = {
    Notifications : NotificationWireMessage array
 }
+
+[<CLIMutable>]
+type LinkWireMessage = {
+   Rel : string
+   Href : string
+}
+
+type LinkListWireMessage = {
+   Links : LinkWireMessage array
+}

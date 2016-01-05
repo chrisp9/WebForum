@@ -26,7 +26,13 @@ type AddUserController() =
       subject.OnNext(cmd)
 
       // TODO...
-      new HttpResponseMessage(HttpStatusCode.Accepted)
+      this.Request.CreateResponse(
+         HttpStatusCode.Accepted,
+         {
+            Links =
+               [| {
+                  Rel = "/notification"
+                  Href = "/notifications/" + cmd.Id.ToString "N"} |]})
 
    interface IObservable<Envelope<AddUserMessage>> with
       member this.Subscribe observer = subject.Subscribe observer
@@ -36,5 +42,20 @@ type AddUserController() =
 
 type NotificationsController(notifications : Notifications.INotifications) =
    inherit ApiController()
+
+   member this.Get id =
+      let toWireMessage (n : Envelope<Notification>) = {
+         NotificationWireMessage.About = n.Item.About.ToString()
+         Type = n.Item.Type
+         Message = n.Item.Message
+      }
+
+      let matches =
+         notifications
+         |> Notifications.About id
+         |> Seq.map toWireMessage
+         |> Seq.toArray
+
+      this.Request.CreateResponse(HttpStatusCode.OK, {Notifications = matches })
 
    member this.Notifications = notifications

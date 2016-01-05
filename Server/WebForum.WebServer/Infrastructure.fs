@@ -62,5 +62,6 @@ type Global() =
 
       Infrastructure.Configure 
          (users |> Users.ToUsers)
+         (notifications |> Notifications.ToNotifications)
          (Observer.Create agent.Post)
          (GlobalConfiguration.Configuration)
