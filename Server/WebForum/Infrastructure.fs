@@ -10,27 +10,23 @@ open System.Web.Http.Controllers
 open FSharp.Control
 open WebForum.WebServer.HttpApi
 
-type CompositionRoot(users : Users.IUsers, notifications : Notifications.INotifications, newUserRequestObserver : IObserver<Envelope<AddUserMessage>>) =
-   interface IHttpControllerActivator with
-      member this.Create(request, controllerDescriptor, controllerType) =
-         if controllerType = typeof<HomeController> then
-            new HomeController() :> IHttpController
-         elif controllerType = typeof<AddUserController> then
-            let addUserController = new AddUserController()
-            
-            (addUserController :> IObservable<Envelope<AddUserMessage>>)
-              .Subscribe newUserRequestObserver 
-              |> request.RegisterForDispose
-            addUserController :> IHttpController
-         elif controllerType = typeof<NotificationsController> then
-            new NotificationsController(notifications) :> IHttpController
-         else
-            raise <| ArgumentException("Unknown controller type")
+type CompositionRoot
+   (users : Users.IUsers, notifications : Notifications.INotifications) =
+
+      interface IHttpControllerActivator with
+         member this.Create(request, controllerDescriptor, controllerType) =
+            if controllerType = typeof<HomeController> then
+               new HomeController() :> IHttpController
+            elif controllerType = typeof<AuthController> then
+               new AuthController() :> IHttpController
+            else
+               raise <| ArgumentException("Unknown controller type")
 
 type HttpRouteDefaults = { Controller : string; Id : obj }
+type AuthDefaults = { Controller : string; User : obj }
 
-let ConfigureServices users notifications newUserRequestObserver (config : HttpConfiguration) =
-   config.Services.Replace(typeof<IHttpControllerActivator>, CompositionRoot(users, notifications, newUserRequestObserver))
+let ConfigureServices users notifications (config : HttpConfiguration) =
+   config.Services.Replace(typeof<IHttpControllerActivator>, CompositionRoot(users, notifications))
 
 let ConfigureRoutes (config : HttpConfiguration) =
    config.Routes.MapHttpRoute(
@@ -38,11 +34,16 @@ let ConfigureRoutes (config : HttpConfiguration) =
          "{controller}/{id}",
          { Controller = "Home"; Id = RouteParameter.Optional }) |> ignore
 
+   config.Routes.MapHttpRoute(
+         "Auth",
+         "{controller}/{user}",
+         { Controller = "Auth"; User = RouteParameter.Optional }) |> ignore
+
 let ConfigureFormatting (config : HttpConfiguration) =
    config.Formatters.JsonFormatter.SerializerSettings.ContractResolver <-
       Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver()
 
-let Configure users notifications (newUserRequestObserver : IObserver<Envelope<AddUserMessage>>) config = 
+let Configure users notifications config = 
    ConfigureRoutes config
-   ConfigureServices users notifications newUserRequestObserver config
+   ConfigureServices users notifications config
    ConfigureFormatting config

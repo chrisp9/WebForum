@@ -9,6 +9,11 @@ type AddUserWireMessage = {
    Email : string
 }
 
+type LogoutMessage = {
+   Username : string
+   Password : string
+}
+
 [<CLIMutable>]
 type AuthenticateWireMessage = {
    Username : string
@@ -26,7 +31,7 @@ type AddPostWireMessage = {
 type NotificationWireMessage = {
    About : string
    Type : string
-   Message : string
+   Message : string 
 }
 
 [<CLIMutable>]

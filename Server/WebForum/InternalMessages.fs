@@ -17,6 +17,11 @@ module Envelope =
       Username : string
       Password : string
    }
+
+   [<CLIMutable>]
+   type SessionMessage = {
+      Username : string
+   }
    
    [<CLIMutable>]
    type AddPostMessage = {

@@ -13,8 +13,8 @@ module Users =
          member this.WithUsername(name) =
             let usersWithName = users |> Seq.filter(fun x -> x.Item.Username = name) 
             match Seq.length usersWithName with
-            | 0 -> None
-            | 1 -> Some (Seq.head usersWithName)
+            | 0 -> Some (Seq.head usersWithName)
+            | 1 -> None
             | _ -> ArgumentException("There is more than one user with the provided username") |> raise
 
          member this.GetEnumerator() =
@@ -24,7 +24,7 @@ module Users =
 
    let ToUsers users = UsersInMemory(users)
 
-   let Handle (users : IUsers) (request : Envelope<AddUserMessage>) =
+   let HandleAddUser (users : IUsers) (request : Envelope<AddUserMessage>) =
       match users.WithUsername(request.Item.Username) with
       | Some _ -> None
       | None -> {
@@ -34,6 +34,13 @@ module Users =
                  } 
                  |> EnvelopWithDefaults
                  |> Some
+
+   let HandleAuth (users : IUsers) (request : Envelope<AuthenticateMessage>) =
+      match users.WithUsername(request.Item.Username) with
+      | Some x -> {
+                     SessionMessage.Username = request.Item.Username
+                  } |> EnvelopWithDefaults |> Some
+      | None -> None
 
 module Notifications =
    type INotifications =

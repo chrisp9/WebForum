@@ -59,8 +59,20 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="Dynamitey">
+      <HintPath>..\packages\Dynamitey.1.0.2.0\lib\net40\Dynamitey.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="FSharp.Control.Reactive">
       <HintPath>..\packages\FSharp.Control.Reactive.3.2.0\lib\net40\FSharp.Control.Reactive.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="FSharp.Core">
+      <HintPath>..\packages\FSharp.Core.3.1.2.1\lib\net40\FSharp.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="FSharp.Interop.Dynamic">
+      <HintPath>..\packages\FSharp.Interop.Dynamic.3.0.0.0\lib\portable-net45+sl50+win\FSharp.Interop.Dynamic.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="FSharp.Reactive">
@@ -74,6 +86,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Net" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Net.Http.Formatting">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
@@ -95,6 +108,10 @@
     </Reference>
     <Reference Include="System.Web.Http.WebHost">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.WebHost.5.2.3\lib\net45\System.Web.Http.WebHost.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="TokenAuthorization.Core">
+      <HintPath>..\packages\WebApiTokenAuth.1.0.3\lib\TokenAuthorization.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>
